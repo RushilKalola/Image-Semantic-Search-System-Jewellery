@@ -1,0 +1,12 @@
+torch
+transformers
+open_clip_torch
+qdrant-client
+pillow
+tqdm
+numpy
+fastapi
+uvicorn
+python-multipart
+streamlit 
+requests

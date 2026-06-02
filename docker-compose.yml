@@ -1,0 +1,48 @@
+version: "3.9"
+
+services:
+  qdrant:
+    image: qdrant/qdrant
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: image-search
+    ports:
+      - "8000:8000"
+    environment:
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+      - PYTHONPATH=/app
+      - CLIP_MODEL_NAME=ViT-L-14
+      - CLIP_PRETRAINED=datacomp_xl_s13b_b90k
+      - DINO_MODEL_NAME=facebook/dinov2-base
+    depends_on:
+      - qdrant
+    volumes:
+      - ./data:/app/data
+
+  streamlit:
+      build:
+        context: .
+        dockerfile: docker/Dockerfile
+      ports:
+        - "8501:8501"
+      environment:
+        - QDRANT_HOST=qdrant
+        - QDRANT_PORT=6333
+        - PYTHONPATH=/app
+        - API_URL=http://app:8000
+      depends_on:
+        - app
+      volumes:
+        - ./data:/app/data
+      command: ["streamlit", "run", "streamlit_app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+
+volumes:
+  qdrant_data:
